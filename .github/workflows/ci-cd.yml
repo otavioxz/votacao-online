@@ -60,12 +60,12 @@ jobs:
           done
 
       - name: CodeQL init
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
 
       - name: CodeQL análise
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
 
   # 3. Aprovação manual (environment production) + 4. Deploy na EC2
   deploy:
