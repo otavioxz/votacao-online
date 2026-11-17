@@ -36,7 +36,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      security-events: write
+      actions: read          # CodeQL lê dados da execução
+      pull-requests: read    # Gitleaks lista os commits do PR
+      security-events: write # CodeQL publica alertas na aba Security
     steps:
       - uses: actions/checkout@v4
         with:
@@ -60,12 +62,24 @@ jobs:
           done
 
       - name: CodeQL init
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
 
+      # Repo privado sem Advanced Security não aceita upload para a aba Security:
+      # a análise roda igual e o resultado é verificado no passo seguinte.
       - name: CodeQL análise
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
+        with:
+          upload: ${{ github.event.repository.private && 'never' || 'always' }}
+          output: codeql-results
+
+      - name: CodeQL — falha se encontrou vulnerabilidades
+        run: |
+          TOTAL=$(jq '[.runs[].results[]] | length' codeql-results/*.sarif)
+          echo "Alertas do CodeQL: $TOTAL"
+          jq -r '.runs[].results[] | "- \(.ruleId): \(.locations[0].physicalLocation.artifactLocation.uri):\(.locations[0].physicalLocation.region.startLine)"' codeql-results/*.sarif
+          [ "$TOTAL" -eq 0 ]
 
   # 3. Aprovação manual (environment production) + 4. Deploy na EC2
   deploy:
