@@ -16,8 +16,11 @@ function codigoValido(codigo, salt, hashSalvo) {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
+// Domínio sem pontos repetidos: evita backtracking (ReDoS) apontado pelo CodeQL
+const EMAIL_REGEX = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
+
 function emailValido(email) {
-  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return typeof email === 'string' && email.length <= 254 && EMAIL_REGEX.test(email);
 }
 
 module.exports = { gerarCodigo, hashCodigo, codigoValido, emailValido };

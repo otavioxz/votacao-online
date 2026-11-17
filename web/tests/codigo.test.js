@@ -16,4 +16,12 @@ test('valida formato de e-mail', () => {
   assert.ok(emailValido('aluno@escola.edu.br'));
   assert.ok(!emailValido('nao-e-email'));
   assert.ok(!emailValido(undefined));
+  assert.ok(!emailValido('a@b..c'));
+});
+
+test('validação de e-mail resiste a ReDoS', () => {
+  const inicio = Date.now();
+  emailValido('a@' + '.'.repeat(250) + '@');
+  emailValido('a@' + '.'.repeat(30000) + '@');
+  assert.ok(Date.now() - inicio < 50);
 });
