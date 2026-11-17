@@ -12,11 +12,14 @@ function calcularResultado(votos) {
     .sort((a, b) => b.votos - a.votos);
 }
 
+// Domínio sem pontos repetidos: evita backtracking (ReDoS) apontado pelo CodeQL
+const EMAIL_REGEX = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
+
 // Importa e-mails aptos de um CSV (uma coluna "email"), sem duplicados
 function parseEleitoresCsv(csv) {
   const linhas = csv.split(/\r?\n/).map((l) => l.trim().toLowerCase()).filter(Boolean);
   if (linhas[0] === 'email') linhas.shift();
-  return [...new Set(linhas.filter((l) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(l)))];
+  return [...new Set(linhas.filter((l) => l.length <= 254 && EMAIL_REGEX.test(l)))];
 }
 
 // A votação só aceita votos dentro do período definido pela comissão
