@@ -1,0 +1,14 @@
+[Unit]
+Description=Votacao - App Web (eleitor)
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/votacao/web
+EnvironmentFile=/opt/votacao/.env
+ExecStart=/usr/bin/node src/server.js
+Restart=always
+User=votacao
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

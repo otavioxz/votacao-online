@@ -1,0 +1,108 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  # 1. Build e testes
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [web, admin]
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm test
+
+  # 2. Verificação de segurança — se falhar, não publica
+  security:
+    needs: build-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Gitleaks varre todo o histórico
+
+      - name: Gitleaks (senhas no código)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: npm audit (dependências)
+        run: |
+          for app in web admin; do
+            echo "::group::npm audit $app"
+            (cd "$app" && npm ci && npm audit --audit-level=high)
+            echo "::endgroup::"
+          done
+
+      - name: CodeQL init
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+
+      - name: CodeQL análise
+        uses: github/codeql-action/analyze@v3
+
+  # 3. Aprovação manual (environment production) + 4. Deploy na EC2
+  deploy:
+    needs: security
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production # pausa aqui até o revisor aprovar
+    concurrency: production
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Deploy via SSM Run Command
+        env:
+          SHA: ${{ github.sha }}
+          WEB_INSTANCE_ID: ${{ vars.WEB_INSTANCE_ID }}
+          ADMIN_INSTANCE_ID: ${{ vars.ADMIN_INSTANCE_ID }}
+        run: |
+          deploy() { # $1 = instance id, $2 = web|admin
+            echo "Publicando $2 ($SHA) na instância $1"
+            CMD_ID=$(aws ssm send-command \
+              --instance-ids "$1" \
+              --document-name AWS-RunShellScript \
+              --comment "deploy $2 ${SHA:0:7}" \
+              --parameters commands="[\"set -e\",\"cd /opt/votacao\",\"git fetch origin\",\"git checkout -f $SHA\",\"cd $2\",\"npm ci --omit=dev\",\"systemctl restart votacao-$2\"]" \
+              --query Command.CommandId --output text)
+
+            if ! aws ssm wait command-executed --command-id "$CMD_ID" --instance-id "$1"; then
+              aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$1" \
+                --query '{Status:Status,Erro:StandardErrorContent}'
+              exit 1
+            fi
+          }
+
+          deploy "$WEB_INSTANCE_ID" web
+          deploy "$ADMIN_INSTANCE_ID" admin
