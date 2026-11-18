@@ -26,7 +26,8 @@ output "sns_topic" {
 
 output "proximos_passos" {
   value = <<-EOT
-    1) Confirme a inscrição do SNS no e-mail ${var.alert_email}.
+    1) Confirme a inscrição do SNS no e-mail ${var.alert_email}%{if var.email_via_ses} e o link
+       "Amazon Web Services – Email Address Verification Request" do SES em: ${join(", ", sort(local.ses_emails))}%{endif}.
     2) Aguarde ~5 min após o apply: as EC2 clonam o repo e se instalam (Target Groups ficam healthy).
        Acompanhe em CloudWatch > Log groups > ${aws_cloudwatch_log_group.app.name} (stream *-bootstrap).
     3) Acesse https://${aws_lb.main.dns_name}/admin e entre com um e-mail da comissão.

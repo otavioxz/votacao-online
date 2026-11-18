@@ -27,13 +27,13 @@ Segurança na aplicação: código guardado só como hash scrypt + salt, código
 
 ## Subir na AWS
 
-1. **Pré-requisitos**: Terraform ≥ 1.5 e AWS CLI. Crie uma *senha de app* no Gmail para o SMTP. Descubra seu IP com `curl https://checkip.amazonaws.com`.
+1. **Pré-requisitos**: Terraform ≥ 1.5 e AWS CLI. Descubra seu IP com `curl https://checkip.amazonaws.com`.
    - **Conta AWS própria** (padrão, região `us-east-2`): IAM → Usuários → criar `github-deploy` → chave de acesso (CLI) → `aws configure`. O Terraform cria a role das EC2 (`terraform/iam.tf`).
    - **AWS Academy**: copie as credenciais de **AWS Details → AWS CLI** e use `region = "us-east-1"` e `create_instance_role = false` (usa o `LabInstanceProfile`).
 2. **Variáveis**:
    ```bash
    cd terraform
-   cp terraform.tfvars.example terraform.tfvars   # preencha IPs, e-mails e SMTP
+   cp terraform.tfvars.example terraform.tfvars   # preencha IPs e e-mails
    ```
 3. **Criar tudo**:
    ```bash
@@ -42,6 +42,8 @@ Segurança na aplicação: código guardado só como hash scrypt + salt, código
    ```
    Leva ~15 min (RDS). Depois, ~5 min para as EC2 se instalarem. Saídas: `url_eleitor`, `url_admin`.
    - Confirme o e-mail do SNS para receber os alarmes.
+   - **E-mail (Amazon SES)**: clique no link "Email Address Verification Request" que chega no remetente e em cada e-mail da comissão. Conta nova fica no *sandbox* do SES, que só entrega para endereços verificados: para testar como eleitor, coloque o e-mail em `ses_verified_emails`; para liberar qualquer destinatário, peça *production access* em SES → Account dashboard.
+   - No AWS Academy (sem SES): `email_via_ses = false` e preencha `smtp_*` com um SMTP externo (ex.: Gmail com *senha de app*).
    - O HTTPS usa certificado autoassinado (o Academy não permite domínio próprio): aceite o aviso do navegador.
    - Se der `AccessDenied` no CloudTrail: `enable_cloudtrail = false` e rode de novo.
    - Para testar uma branch antes do merge: `git_ref = "nome-da-branch"`.

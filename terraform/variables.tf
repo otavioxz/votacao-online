@@ -40,29 +40,51 @@ variable "alert_email" {
   type        = string
 }
 
+variable "email_via_ses" {
+  description = "Envia os e-mails pelo Amazon SES (email.tf). false = usa o SMTP externo de smtp_host/smtp_user/smtp_password (ex.: no AWS Academy)."
+  type        = bool
+  default     = true
+}
+
+variable "ses_from_email" {
+  description = "Remetente verificado no SES. Se vazio, usa o primeiro e-mail de admin_emails."
+  type        = string
+  default     = ""
+}
+
+variable "ses_verified_emails" {
+  description = "Outros e-mails verificados no SES. Enquanto a conta estiver no sandbox, só esses (e a comissão) recebem códigos, ex.: eleitores de teste."
+  type        = list(string)
+  default     = []
+}
+
 variable "smtp_host" {
-  type    = string
-  default = "smtp.gmail.com"
+  description = "Só com email_via_ses = false"
+  type        = string
+  default     = "smtp.gmail.com"
 }
 
 variable "smtp_port" {
-  type    = number
-  default = 587
+  description = "Só com email_via_ses = false"
+  type        = number
+  default     = 587
 }
 
 variable "smtp_user" {
-  description = "Usuário SMTP (ex.: sua conta Gmail)"
+  description = "Só com email_via_ses = false. Usuário SMTP (ex.: conta Gmail)"
   type        = string
+  default     = ""
 }
 
 variable "smtp_password" {
-  description = "Senha SMTP (no Gmail, use uma 'senha de app'). Vai para o SSM Parameter Store como SecureString."
+  description = "Só com email_via_ses = false. Senha SMTP (no Gmail, uma 'senha de app'). Vai para o SSM Parameter Store como SecureString."
   type        = string
+  default     = ""
   sensitive   = true
 }
 
 variable "mail_from" {
-  description = "Remetente dos e-mails. Se vazio, usa o smtp_user."
+  description = "Remetente exibido nos e-mails. Se vazio, \"Votacao Online <remetente>\"."
   type        = string
   default     = ""
 }
