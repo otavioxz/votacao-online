@@ -66,7 +66,7 @@ function criarBase({ nome, basePath = '', sessionSecret, cookieSecure, publicDir
 
   app.use(`${basePath}/static`, express.static(publicDir, { maxAge: '1h', index: false }));
   for (const [rota, arquivo] of Object.entries(arquivosEstaticos)) {
-    app.get(rota, (req, res) => res.sendFile(arquivo));
+    app.get(rota, limiteAuth, (req, res) => res.sendFile(arquivo));
   }
 
   app.use(express.urlencoded({ extended: false, limit: '2mb', parameterLimit: 100 }));
