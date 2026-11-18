@@ -1,0 +1,26 @@
+#!/bin/bash
+# user_data da EC2 "${app}" (gerado pelo Terraform): grava a configuração de infraestrutura,
+# clona o repositório e delega toda a preparação para deploy/bootstrap-ec2.sh.
+set -euxo pipefail
+exec > >(tee -a /var/log/user-data.log) 2>&1
+
+mkdir -p /etc/votacao
+cat > /etc/votacao/infra.conf <<'EOF'
+REGION=${region}
+SSM_PREFIX=${ssm_prefix}
+NODE_VERSION=${node_version}
+DB_HOST=${db_host}
+DB_NAME=${db_name}
+DB_MASTER_USER=${db_master_user}
+SMTP_HOST=${smtp_host}
+SMTP_PORT=${smtp_port}
+SMTP_USER=${smtp_user}
+MAIL_FROM="${mail_from}"
+ADMIN_EMAILS=${admin_emails}
+LOG_GROUP=${log_group}
+EOF
+chmod 600 /etc/votacao/infra.conf
+
+dnf install -y git
+git clone --depth 50 --branch "${git_ref}" "${repo_url}" /opt/votacao
+bash /opt/votacao/deploy/bootstrap-ec2.sh ${app}

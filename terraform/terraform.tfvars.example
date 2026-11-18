@@ -1,0 +1,25 @@
+# Copie para terraform.tfvars e preencha (terraform.tfvars está no .gitignore).
+
+region  = "us-east-1"
+project = "votacao"
+
+# IP público da instituição (e o seu, para a apresentação). Descubra em https://checkip.amazonaws.com
+admin_allowed_cidrs = ["200.100.50.10/32"]
+
+# Comissão eleitoral (login por código enviado a esses e-mails)
+admin_emails = ["seu.email@unidavi.edu.br"]
+
+# Recebe os alarmes do CloudWatch
+alert_email = "seu.email@unidavi.edu.br"
+
+# Servidor SMTP (Gmail com "senha de app": Conta Google > Segurança > Senhas de app)
+smtp_host     = "smtp.gmail.com"
+smtp_port     = 587
+smtp_user     = "sua.conta@gmail.com"
+smtp_password = "xxxx xxxx xxxx xxxx"
+
+# Branch clonada no 1º boot das EC2 (use o nome desta branch para testar antes do merge)
+git_ref = "main"
+
+# Se o AWS Academy negar a criação da trilha, troque para false
+enable_cloudtrail = true

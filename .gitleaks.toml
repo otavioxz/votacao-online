@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Valores fixos de desenvolvimento local (não são segredos reais; produção usa SSM)"
+regexes = ['''dev-only-[a-z-]+''', '''xxxx xxxx xxxx xxxx''']
