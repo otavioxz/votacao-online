@@ -42,7 +42,7 @@ Segurança na aplicação: código guardado só como hash scrypt + salt, código
    ```
    Leva ~15 min (RDS). Depois, ~5 min para as EC2 se instalarem. Saídas: `url_eleitor`, `url_admin`.
    - Confirme o e-mail do SNS para receber os alarmes.
-   - **E-mail (Amazon SES)**: clique no link "Email Address Verification Request" que chega no remetente e em cada e-mail da comissão. Conta nova fica no *sandbox* do SES, que só entrega para endereços verificados: para testar como eleitor, coloque o e-mail em `ses_verified_emails`; para liberar qualquer destinatário, peça *production access* em SES → Account dashboard.
+   - **E-mail (Amazon SES)**: clique no link "Email Address Verification Request" que chega no remetente e em cada e-mail da comissão. Conta nova fica no *sandbox* do SES, que só entrega para endereços verificados: para testar como eleitor, coloque o e-mail em `ses_verified_emails`; para liberar qualquer destinatário (eleitores cadastrados na hora), peça *production access* em SES → Account dashboard. E-mails devolvidos (bounce) e reclamações chegam como alerta no SNS e o endereço vai para a lista de supressão.
    - No AWS Academy (sem SES): `email_via_ses = false` e preencha `smtp_*` com um SMTP externo (ex.: Gmail com *senha de app*).
    - O HTTPS usa certificado autoassinado (o Academy não permite domínio próprio): aceite o aviso do navegador.
    - Se der `AccessDenied` no CloudTrail: `enable_cloudtrail = false` e rode de novo.
