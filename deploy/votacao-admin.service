@@ -1,14 +1,22 @@
 [Unit]
 Description=Votacao - App Admin (comissao)
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 WorkingDirectory=/opt/votacao/admin
 EnvironmentFile=/opt/votacao/.env
 ExecStart=/usr/bin/node src/server.js
 Restart=always
+RestartSec=5
 User=votacao
+StandardOutput=append:/var/log/votacao/admin.log
+StandardError=append:/var/log/votacao/admin.log
 NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/log/votacao
 
 [Install]
 WantedBy=multi-user.target
