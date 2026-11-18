@@ -16,6 +16,8 @@ const a = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(
 
 // Limite extra nas rotas de código (defesa em profundidade: o WAF já limita antes).
 const limiteAuth = rateLimit({ windowMs: 15 * 60_000, limit: 30, standardHeaders: 'draft-7', legacyHeaders: false });
+// Limite dedicado para rotas que fazem acesso a disco via sendFile.
+const limiteArquivos = rateLimit({ windowMs: 60_000, limit: 120, standardHeaders: 'draft-7', legacyHeaders: false });
 
 function tokensIguais(x, y) {
   const bx = Buffer.from(String(x));
@@ -66,7 +68,7 @@ function criarBase({ nome, basePath = '', sessionSecret, cookieSecure, publicDir
 
   app.use(`${basePath}/static`, express.static(publicDir, { maxAge: '1h', index: false }));
   for (const [rota, arquivo] of Object.entries(arquivosEstaticos)) {
-    app.get(rota, (req, res) => res.sendFile(arquivo));
+    app.get(rota, limiteArquivos, (req, res) => res.sendFile(arquivo));
   }
 
   app.use(express.urlencoded({ extended: false, limit: '2mb', parameterLimit: 100 }));
