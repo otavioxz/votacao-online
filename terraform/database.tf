@@ -14,8 +14,9 @@ resource "aws_db_parameter_group" "main" {
   family = "postgres${split(".", var.db_engine_version)[0]}"
 
   parameter {
-    name  = "rds.force_ssl"
-    value = "1"
+    name         = "rds.force_ssl"
+    value        = "1"
+    apply_method = "pending-reboot" # é assim que a AWS grava; sem isso o plan acusa diferença sempre
   }
 
   parameter {
