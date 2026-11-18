@@ -60,8 +60,12 @@ data "aws_iam_policy_document" "ses_smtp" {
   statement {
     sid     = "EnviarSomenteDoRemetente"
     actions = ["ses:SendRawEmail"]
-    # identity/* porque, no sandbox, o SES também confere os destinatários verificados
-    resources = ["arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:identity/*"]
+    # identity/* porque, no sandbox, o SES também confere os destinatários verificados;
+    # o configuration set também precisa de permissão, pois é usado em todo envio.
+    resources = [
+      "arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:identity/*",
+      "arn:aws:ses:${var.region}:${data.aws_caller_identity.current.account_id}:configuration-set/${var.project}-emails",
+    ]
     condition {
       test     = "StringEquals"
       variable = "ses:FromAddress"
