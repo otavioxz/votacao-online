@@ -1,7 +1,7 @@
 variable "region" {
   description = "Região AWS. Para o plano de DR, basta trocar a região e rodar terraform apply."
   type        = string
-  default     = "us-east-1"
+  default     = "us-east-2"
 }
 
 variable "project" {
@@ -84,8 +84,14 @@ variable "instance_type" {
   default = "t3.micro"
 }
 
+variable "create_instance_role" {
+  description = "Cria a role IAM das EC2 com privilégio mínimo. Use false no AWS Academy (que não permite criar IAM)."
+  type        = bool
+  default     = true
+}
+
 variable "instance_profile_name" {
-  description = "Instance profile das EC2. No AWS Academy não é possível criar IAM, então usamos o pré-definido."
+  description = "Instance profile já existente, usado só quando create_instance_role = false (ex.: LabInstanceProfile no AWS Academy)"
   type        = string
   default     = "LabInstanceProfile"
 }
