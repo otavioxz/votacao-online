@@ -12,11 +12,18 @@ admin_emails = ["seu.email@unidavi.edu.br"]
 # Recebe os alarmes do CloudWatch
 alert_email = "seu.email@unidavi.edu.br"
 
-# Servidor SMTP (Gmail com "senha de app": Conta Google > Segurança > Senhas de app)
-smtp_host     = "smtp.gmail.com"
-smtp_port     = 587
-smtp_user     = "sua.conta@gmail.com"
-smtp_password = "xxxx xxxx xxxx xxxx"
+# E-mail pelo Amazon SES: o Terraform cria a credencial SMTP. A AWS manda um link de
+# verificação para o remetente e para cada e-mail da comissão (clique antes de usar).
+email_via_ses = true
+# ses_from_email = "votacao@unidavi.edu.br" # padrão: o primeiro de admin_emails
+# Conta no sandbox do SES só envia para e-mails verificados: inclua os eleitores de teste
+ses_verified_emails = []
+
+# Sem SES (AWS Academy): email_via_ses = false e um SMTP externo, ex.: Gmail com "senha de app"
+# smtp_host     = "smtp.gmail.com"
+# smtp_port     = 587
+# smtp_user     = "sua.conta@gmail.com"
+# smtp_password = "xxxx xxxx xxxx xxxx"
 
 # Branch clonada no 1º boot das EC2 (use o nome desta branch para testar antes do merge)
 git_ref = "main"

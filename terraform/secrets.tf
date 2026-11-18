@@ -19,5 +19,5 @@ resource "aws_ssm_parameter" "secret" {
   for_each = toset(concat(local.random_secrets, ["smtp_password"]))
   name     = "${local.ssm_prefix}/${each.key}"
   type     = "SecureString"
-  value    = each.key == "smtp_password" ? var.smtp_password : random_password.secret[each.key].result
+  value    = each.key == "smtp_password" ? local.smtp_password : random_password.secret[each.key].result
 }

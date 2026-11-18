@@ -46,10 +46,10 @@ resource "aws_instance" "app" {
     db_host        = aws_db_instance.main.address
     db_name        = aws_db_instance.main.db_name
     db_master_user = aws_db_instance.main.username
-    smtp_host      = var.smtp_host
-    smtp_port      = var.smtp_port
-    smtp_user      = var.smtp_user
-    mail_from      = var.mail_from != "" ? var.mail_from : "Votacao Online <${var.smtp_user}>"
+    smtp_host      = local.smtp_host
+    smtp_port      = local.smtp_port
+    smtp_user      = local.smtp_user
+    mail_from      = local.mail_from
     admin_emails   = join(",", var.admin_emails)
     log_group      = aws_cloudwatch_log_group.app.name
   })
