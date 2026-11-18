@@ -21,8 +21,34 @@ locals {
 
 # Cada endereço recebe um e-mail da AWS com o link de verificação
 resource "aws_sesv2_email_identity" "email" {
-  for_each       = local.ses_emails
-  email_identity = each.value
+  for_each               = local.ses_emails
+  email_identity         = each.value
+  configuration_set_name = aws_sesv2_configuration_set.main[0].configuration_set_name
+}
+
+# E-mail devolvido (bounce), reclamação ou rejeição vira alerta no tópico SNS da comissão,
+# e o endereço entra na lista de supressão (não recebe de novo até ser corrigido).
+resource "aws_sesv2_configuration_set" "main" {
+  count                  = var.email_via_ses ? 1 : 0
+  configuration_set_name = "${var.project}-emails"
+
+  suppression_options {
+    suppressed_reasons = ["BOUNCE", "COMPLAINT"]
+  }
+}
+
+resource "aws_sesv2_configuration_set_event_destination" "alertas" {
+  count                  = var.email_via_ses ? 1 : 0
+  configuration_set_name = aws_sesv2_configuration_set.main[0].configuration_set_name
+  event_destination_name = "bounces-para-sns"
+
+  event_destination {
+    enabled              = true
+    matching_event_types = ["BOUNCE", "COMPLAINT", "REJECT"]
+    sns_destination {
+      topic_arn = aws_sns_topic.alerts.arn
+    }
+  }
 }
 
 resource "aws_iam_user" "ses_smtp" {
