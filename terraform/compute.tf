@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # EC2 Web (eleitor) e EC2 Admin (comissão) em sub-redes privadas, sem IP público,
 # sem chave SSH, IMDSv2 obrigatório e disco criptografado.
-# Usam o LabInstanceProfile (IAM pré-definido do AWS Academy).
+# Usam a role IAM de iam.tf (ou o LabInstanceProfile, no AWS Academy).
 # No 1º boot clonam o repositório e rodam deploy/bootstrap-ec2.sh: recriar a
 # instância (DR) devolve o mesmo servidor, sem passo manual.
 # ---------------------------------------------------------------------------
@@ -22,7 +22,7 @@ resource "aws_instance" "app" {
   instance_type               = var.instance_type
   subnet_id                   = aws_subnet.app[each.value.subnet_index].id
   vpc_security_group_ids      = [aws_security_group.app[each.key].id]
-  iam_instance_profile        = var.instance_profile_name
+  iam_instance_profile        = local.instance_profile
   associate_public_ip_address = false
 
   metadata_options {
@@ -60,6 +60,9 @@ resource "aws_instance" "app" {
     aws_route_table_association.app,
     aws_nat_gateway.nat,
     aws_ssm_parameter.secret,
+    aws_iam_role_policy.ec2_parametros,
+    aws_iam_role_policy_attachment.ssm,
+    aws_iam_role_policy_attachment.cloudwatch,
   ]
 
   lifecycle {

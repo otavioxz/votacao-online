@@ -1,6 +1,6 @@
 # Sistema de Votação Online
 
-Eleições de representantes estudantis na AWS (AWS Academy Learner Lab), com WAF, VPC com sub-redes privadas, IAM com privilégio mínimo, CI/CD no GitHub Actions com SAST e aprovação manual, e **toda a infraestrutura criada com um único `terraform apply`** (o próprio Terraform é o plano de DR).
+Eleições de representantes estudantis na AWS (conta própria ou AWS Academy Learner Lab), com WAF, VPC com sub-redes privadas, IAM com privilégio mínimo, CI/CD no GitHub Actions com SAST e aprovação manual, e **toda a infraestrutura criada com um único `terraform apply`** (o próprio Terraform é o plano de DR).
 
 ## Estrutura
 
@@ -25,9 +25,11 @@ Eleições de representantes estudantis na AWS (AWS Academy Learner Lab), com WA
 
 Segurança na aplicação: código guardado só como hash scrypt + salt, código único por eleitor, 5 tentativas, `SELECT … FOR UPDATE` contra voto duplo, votos sem e-mail/horário (UUID), **dois usuários de banco** (`votacao_web`, `votacao_admin`) sem permissão para alterar votos ou apagar auditoria, CSRF, CSP/Helmet, escape automático de HTML, TLS validado até o RDS, segredos no SSM Parameter Store, IMDSv2, discos e banco criptografados.
 
-## Subir na AWS (AWS Academy)
+## Subir na AWS
 
-1. **Pré-requisitos**: Terraform ≥ 1.5 e AWS CLI. Inicie o Learner Lab e copie as credenciais de **AWS Details → AWS CLI** para `~/.aws/credentials`. Crie uma *senha de app* no Gmail para o SMTP. Descubra seu IP com `curl https://checkip.amazonaws.com`.
+1. **Pré-requisitos**: Terraform ≥ 1.5 e AWS CLI. Crie uma *senha de app* no Gmail para o SMTP. Descubra seu IP com `curl https://checkip.amazonaws.com`.
+   - **Conta AWS própria** (padrão, região `us-east-2`): IAM → Usuários → criar `github-deploy` → chave de acesso (CLI) → `aws configure`. O Terraform cria a role das EC2 (`terraform/iam.tf`).
+   - **AWS Academy**: copie as credenciais de **AWS Details → AWS CLI** e use `region = "us-east-1"` e `create_instance_role = false` (usa o `LabInstanceProfile`).
 2. **Variáveis**:
    ```bash
    cd terraform
@@ -50,8 +52,8 @@ Segurança na aplicação: código guardado só como hash scrypt + salt, código
 1. **Settings → Branches**: proteger a `main` (exigir PR e os checks `build-test`, `security` e `iac`).
 2. **Settings → Environments → `production`**: adicionar *Required reviewers*.
 3. **Settings → Secrets and variables → Actions**
-   - Secrets: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` (Learner Lab → AWS Details; **renovar a cada sessão**)
-   - Variables (opcionais): `AWS_REGION` (padrão `us-east-1`), `PROJECT` (padrão `votacao`). Os IDs das EC2 não são mais necessários: o deploy encontra as instâncias pela tag.
+   - Secrets: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` (+ `AWS_SESSION_TOKEN` só no AWS Academy, renovando a cada sessão)
+   - Variables (opcionais): `AWS_REGION` (padrão `us-east-2`), `PROJECT` (padrão `votacao`). Os IDs das EC2 não são mais necessários: o deploy encontra as instâncias pela tag.
 4. **Settings → Code security**: ativar Dependabot alerts e security updates.
 
 > No plano gratuito, CodeQL e revisores obrigatórios em Environments exigem repositório **público**.

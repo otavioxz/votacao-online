@@ -1,6 +1,6 @@
 # Copie para terraform.tfvars e preencha (terraform.tfvars está no .gitignore).
 
-region  = "us-east-1"
+region  = "us-east-2"
 project = "votacao"
 
 # IP público da instituição (e o seu, para a apresentação). Descubra em https://checkip.amazonaws.com
@@ -20,6 +20,9 @@ smtp_password = "xxxx xxxx xxxx xxxx"
 
 # Branch clonada no 1º boot das EC2 (use o nome desta branch para testar antes do merge)
 git_ref = "main"
+
+# Conta AWS própria: o Terraform cria a role das EC2. No AWS Academy use false (usa o LabInstanceProfile).
+create_instance_role = true
 
 # Se o AWS Academy negar a criação da trilha, troque para false
 enable_cloudtrail = true
