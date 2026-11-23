@@ -15,6 +15,12 @@ function getTransport() {
       secure: port === 465,
       requireTLS: port === 587, // SMTP 587 com STARTTLS obrigatório
       auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+      // Fila de envio: o SES no sandbox aceita 1 e-mail por segundo. Com a turma pedindo código
+      // ao mesmo tempo, os envios esperam a vez em vez de falhar com "Throttling".
+      pool: true,
+      maxConnections: 1,
+      rateLimit: 1,
+      rateDelta: 1100, // um pouco acima de 1 s, de margem
     });
   }
   return transporter;
