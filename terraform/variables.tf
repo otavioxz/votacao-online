@@ -135,9 +135,9 @@ variable "db_engine_version" {
 }
 
 variable "waf_rate_limit_auth" {
-  description = "Máximo de requisições por IP a cada 5 minutos nas rotas de envio/validação de código. Atenção: alunos na rede da instituição compartilham o mesmo IP público."
+  description = "Máximo de requisições por IP a cada 5 minutos nas rotas de envio/validação de código. Alunos na rede da instituição compartilham o mesmo IP público, por isso o valor comporta uma turma inteira votando ao mesmo tempo."
   type        = number
-  default     = 100
+  default     = 1000
 }
 
 variable "waf_rate_limit_global" {

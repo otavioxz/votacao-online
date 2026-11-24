@@ -15,7 +15,9 @@ const { layout, html } = require('./html');
 const a = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 // Limite extra nas rotas de código (defesa em profundidade: o WAF já limita antes).
-const limiteAuth = rateLimit({ windowMs: 15 * 60_000, limit: 30, standardHeaders: 'draft-7', legacyHeaders: false });
+// É por IP, e uma turma na rede da instituição sai por um único IP público: 300 em 15 min
+// atende a turma inteira. A força bruta continua barrada pelas 5 tentativas por eleitor.
+const limiteAuth = rateLimit({ windowMs: 15 * 60_000, limit: 300, standardHeaders: 'draft-7', legacyHeaders: false });
 // Limite dedicado para rotas que fazem acesso a disco via sendFile.
 const limiteArquivos = rateLimit({ windowMs: 60_000, limit: 120, standardHeaders: 'draft-7', legacyHeaders: false });
 
